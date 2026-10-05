@@ -174,6 +174,120 @@ export interface CalendarEvent {
   project?: Project | null;
 }
 
+// Phase 2: Knowledge Types
+export type FolderType = "notes" | "files" | "bookmarks" | "general";
+
+export interface Folder {
+  id: string;
+  workspace_id: string;
+  parent_id: string | null;
+  name: string;
+  slug: string;
+  type: FolderType;
+  color: string;
+  icon?: string | null;
+  order_index: number;
+  created_by?: string | null;
+  created_at: string;
+  updated_at: string;
+  notes_count?: number;
+  files_count?: number;
+  bookmarks_count?: number;
+}
+
+export interface Tag {
+  id: string;
+  workspace_id: string;
+  name: string;
+  color: string;
+  created_at: string;
+  notes_count?: number;
+}
+
+export interface Note {
+  id: string;
+  workspace_id: string;
+  folder_id: string | null;
+  project_id: string | null;
+  goal_id: string | null;
+  task_id: string | null;
+  title: string;
+  content: Record<string, unknown>;
+  content_html: string;
+  plain_text: string;
+  is_pinned: boolean;
+  is_archived: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  folder?: Folder | null;
+  project?: Project | null;
+  goal?: Goal | null;
+  task?: Task | null;
+  tags?: Tag[];
+  backlinks_count?: number;
+}
+
+export type KnowledgeEntityType = "note" | "project" | "goal" | "task" | "bookmark";
+
+export interface KnowledgeBacklink {
+  id: string;
+  workspace_id: string;
+  source_note_id: string;
+  target_note_id: string | null;
+  target_entity_type: KnowledgeEntityType;
+  target_entity_id: string | null;
+  link_text: string | null;
+  context_snippet: string | null;
+  created_at: string;
+  source_note?: Note | null;
+  target_note?: Note | null;
+}
+
+export type FileCategory = "pdf" | "image" | "video" | "audio" | "csv" | "document" | "archive" | "other";
+
+export interface FileItem {
+  id: string;
+  workspace_id: string;
+  folder_id: string | null;
+  project_id: string | null;
+  task_id: string | null;
+  note_id: string | null;
+  name: string;
+  file_path: string;
+  file_url: string;
+  file_type: string;
+  file_size: number;
+  category: FileCategory;
+  labels: string[];
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  folder?: Folder | null;
+  project?: Project | null;
+}
+
+export interface Bookmark {
+  id: string;
+  workspace_id: string;
+  folder_id: string | null;
+  project_id: string | null;
+  url: string;
+  title: string;
+  description: string | null;
+  domain: string;
+  favicon_url: string | null;
+  tags: string[];
+  notes: string | null;
+  ai_summary: string | null;
+  is_favorite: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  folder?: Folder | null;
+  project?: Project | null;
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -249,6 +363,36 @@ export type Database = {
         Row: CalendarEvent;
         Insert: Partial<CalendarEvent> & { workspace_id: string; title: string; start_time: string; end_time: string };
         Update: Partial<CalendarEvent>;
+      };
+      folders: {
+        Row: Folder;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      tags: {
+        Row: Tag;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      notes: {
+        Row: Note;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      knowledge_backlinks: {
+        Row: KnowledgeBacklink;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      files: {
+        Row: FileItem;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      bookmarks: {
+        Row: Bookmark;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
       };
     };
   };

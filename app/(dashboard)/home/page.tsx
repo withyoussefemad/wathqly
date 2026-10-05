@@ -15,6 +15,7 @@ import {
   Loader2,
   ArrowRight,
   Zap,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -99,6 +100,12 @@ export default function HomePage() {
         </div>
 
         <div className="flex items-center gap-2.5">
+          <Button asChild variant="outline" size="sm" className="gap-1.5 text-xs">
+            <Link href="/notes">
+              <FileText className="h-3.5 w-3.5 text-primary" />
+              <span>Capture Note</span>
+            </Link>
+          </Button>
           <Button asChild variant="outline" size="sm" className="gap-1.5 text-xs">
             <Link href="/plan">
               <Calendar className="h-3.5 w-3.5" />

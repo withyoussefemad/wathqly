@@ -11,6 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { CheckSquare, FileText, Lightbulb, Bookmark, Users, Zap, Check } from "lucide-react";
 import { toast } from "sonner";
+import { createNoteAction, createBookmarkAction } from "@/actions/knowledge";
+import { createTaskAction } from "@/actions/core-os";
 
 type CaptureType = "task" | "note" | "idea" | "bookmark" | "crm";
 
@@ -25,10 +27,36 @@ export function QuickCaptureDialog({
   const [type, setType] = React.useState<CaptureType>("task");
   const [isSaved, setIsSaved] = React.useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!content.trim()) return;
 
-    // Simulate quick capture dispatch
+    if (type === "note" || type === "idea") {
+      const lines = content.trim().split("\n");
+      const title = lines[0].slice(0, 100);
+      await createNoteAction({
+        title,
+        plain_text: content,
+        content_html: `<p>${content.replace(/\n/g, "<br/>")}</p>`,
+        tags: [type],
+      });
+    } else if (type === "bookmark") {
+      let url = content.trim();
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        url = `https://${url}`;
+      }
+      await createBookmarkAction({
+        url,
+        title: `Captured Bookmark: ${url}`,
+        description: content,
+      });
+    } else if (type === "task") {
+      const fd = new FormData();
+      fd.append("title", content.trim());
+      fd.append("priority", "medium");
+      fd.append("isMyDay", "true");
+      await createTaskAction(fd);
+    }
+
     setIsSaved(true);
     setTimeout(() => {
       setIsSaved(false);

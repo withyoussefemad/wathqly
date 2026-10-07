@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert } from "@/components/ui/alert";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { createClient } from "@/lib/supabase/client";
 import { ArrowLeft, CheckCircle2, Loader2, Mail } from "lucide-react";
@@ -53,7 +54,7 @@ export default function ForgotPasswordPage() {
           <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-primary text-primary-foreground font-bold text-xl shadow-md">
             و
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl font-bold text-foreground">
             وثّقلي <span className="text-muted-foreground font-normal text-lg">/ Wathqly</span>
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -70,9 +71,9 @@ export default function ForgotPasswordPage() {
           </CardHeader>
           <CardContent>
             {isSent ? (
-              <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 space-y-3">
+              <Alert variant="success" className="space-y-3">
                 <div className="flex items-center gap-2 font-medium">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                  <CheckCircle2 className="h-5 w-5" />
                   <span>Check your inbox</span>
                 </div>
                 <p className="text-xs">
@@ -81,13 +82,13 @@ export default function ForgotPasswordPage() {
                 <Button asChild variant="outline" size="sm" className="w-full">
                   <Link href="/login">Back to Sign In</Link>
                 </Button>
-              </div>
+              </Alert>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 {errorMessage && (
-                  <div className="p-3 text-xs rounded-md bg-destructive/10 border border-destructive/20 text-destructive font-medium">
+                  <Alert variant="destructive" className="text-xs font-medium">
                     {errorMessage}
-                  </div>
+                  </Alert>
                 )}
 
                 <div className="space-y-1.5">

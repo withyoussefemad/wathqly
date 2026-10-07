@@ -22,7 +22,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useWorkspace } from "@/components/providers/workspace-provider";
 import { getHomeDashboardDataAction, toggleTaskStatusAction } from "@/actions/core-os";
-import type { Task, Goal, Project, CalendarEvent } from "@/lib/supabase/types";
+import { getCrmStatsAction } from "@/actions/crm";
+import { getMeetingsAction } from "@/actions/meetings";
+import type { Task, Goal, Project, CalendarEvent, Meeting } from "@/lib/supabase/types";
+import { Users2, Video } from "lucide-react";
 import { toast } from "sonner";
 
 export default function HomePage() {
@@ -31,16 +34,24 @@ export default function HomePage() {
   const [goals, setGoals] = React.useState<Goal[]>([]);
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [events, setEvents] = React.useState<CalendarEvent[]>([]);
+  const [crmStats, setCrmStats] = React.useState<{ totalPipelineValue: number; totalWonValue: number; openDealsCount: number; pendingActivities: number } | null>(null);
+  const [upcomingMeetings, setUpcomingMeetings] = React.useState<Meeting[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   const loadData = React.useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getHomeDashboardDataAction();
+      const [data, stats, meetings] = await Promise.all([
+        getHomeDashboardDataAction(),
+        getCrmStatsAction(),
+        getMeetingsAction(),
+      ]);
       setTasks(data.tasks);
       setGoals(data.goals);
       setProjects(data.projects);
       setEvents(data.events);
+      setCrmStats(stats);
+      setUpcomingMeetings(meetings.slice(0, 3));
     } catch {
       toast.error("Failed to load dashboard data");
     } finally {
@@ -129,7 +140,7 @@ export default function HomePage() {
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+              <span className="text-xs font-semibold text-primary font-medium">
                 AI System Synthesis
               </span>
               <Badge variant="outline" className="text-[10px] py-0 px-1.5 border-primary/30 text-primary">
@@ -152,14 +163,14 @@ export default function HomePage() {
 
       {/* Overdue alert if any */}
       {overdueTasks.length > 0 && (
-        <div className="p-3.5 rounded-lg border border-amber-500/30 bg-amber-500/10 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300">
+        <div className="p-3.5 rounded-lg border border-warning/30 bg-warning/10 flex items-center justify-between text-xs text-warning">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+            <AlertTriangle className="h-4 w-4 text-warning shrink-0" />
             <span>
               You have <strong>{overdueTasks.length} overdue task(s)</strong> requiring attention.
             </span>
           </div>
-          <Button asChild variant="outline" size="sm" className="h-7 text-[11px] border-amber-500/30">
+          <Button asChild variant="outline" size="sm" className="h-7 text-xs border-warning/30">
             <Link href="/tasks">Resolve in Tasks</Link>
           </Button>
         </div>
@@ -170,13 +181,13 @@ export default function HomePage() {
         <Card className="border-border/80">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-medium text-muted-foreground">Today&apos;s Focus</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            <CheckCircle2 className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-mono">
               {completedTasks.length} / {tasks.length}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 100) : 0}% completed
             </p>
           </CardContent>
@@ -189,7 +200,7 @@ export default function HomePage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-mono">{goals.length}</div>
-            <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1">
+            <p className="text-xs text-success mt-1">
               Advancing quarterly targets
             </p>
           </CardContent>
@@ -198,11 +209,11 @@ export default function HomePage() {
         <Card className="border-border/80">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-medium text-muted-foreground">Active Projects</CardTitle>
-            <FolderGit2 className="h-4 w-4 text-blue-500" />
+            <FolderGit2 className="h-4 w-4 text-info" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-mono">{projects.length}</div>
-            <p className="text-[11px] text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Roadmap initiatives
             </p>
           </CardContent>
@@ -211,11 +222,11 @@ export default function HomePage() {
         <Card className="border-border/80">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-medium text-muted-foreground">Today&apos;s Events</CardTitle>
-            <Clock className="h-4 w-4 text-amber-500" />
+            <Clock className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-mono">{events.length}</div>
-            <p className="text-[11px] text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Scheduled blocks &amp; meetings
             </p>
           </CardContent>
@@ -247,7 +258,7 @@ export default function HomePage() {
                 </div>
               ) : todayTasks.length === 0 ? (
                 <div className="p-8 text-center text-xs text-muted-foreground space-y-2">
-                  <CheckCircle2 className="h-6 w-6 text-emerald-500 mx-auto" />
+                  <CheckCircle2 className="h-6 w-6 text-success mx-auto" />
                   <p>All caught up! No tasks pending for today.</p>
                 </div>
               ) : (
@@ -262,7 +273,7 @@ export default function HomePage() {
                         className="cursor-pointer text-muted-foreground hover:text-primary transition-colors"
                       >
                         {task.status === "done" ? (
-                          <CheckCircle2 className="h-4 w-4 text-emerald-500 fill-emerald-500/20" />
+                          <CheckCircle2 className="h-4 w-4 text-success fill-emerald-500/20" />
                         ) : (
                           <Circle className="h-4 w-4" />
                         )}
@@ -283,7 +294,7 @@ export default function HomePage() {
                         {task.priority}
                       </Badge>
                       {task.estimated_minutes && (
-                        <span className="text-[11px] text-muted-foreground font-mono flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground font-mono flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {task.estimated_minutes}m
                         </span>
@@ -328,7 +339,7 @@ export default function HomePage() {
                         style={{ width: `${progress}%`, backgroundColor: p.color }}
                       />
                     </div>
-                    <div className="flex justify-between text-[11px] text-muted-foreground">
+                    <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{done} of {total} deliverables completed</span>
                       <span className="font-mono font-medium text-foreground">{progress}%</span>
                     </div>
@@ -384,7 +395,7 @@ export default function HomePage() {
                 const timeStr = dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
                 return (
                   <div key={event.id} className="flex items-start gap-3 text-xs">
-                    <div className="font-mono text-muted-foreground text-[11px] w-14 shrink-0 pt-0.5">
+                    <div className="font-mono text-muted-foreground text-xs w-14 shrink-0 pt-0.5">
                       {timeStr}
                     </div>
                     <div
@@ -402,6 +413,61 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
+          {/* Business & Sales Pipeline Widget */}
+          {crmStats && (
+            <Card className="border-border/80">
+              <CardHeader className="flex flex-row items-center justify-between pb-3">
+                <div className="flex items-center gap-2">
+                  <Users2 className="h-4 w-4 text-primary" />
+                  <CardTitle className="text-base font-semibold">Business &amp; Pipeline</CardTitle>
+                </div>
+                <Button asChild variant="ghost" size="sm" className="text-xs">
+                  <Link href="/crm">CRM</Link>
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-2.5 rounded-lg bg-secondary/30 border border-border/40">
+                    <span className="text-[10px] text-muted-foreground uppercase font-semibold">Active Value</span>
+                    <p className="font-mono font-bold text-foreground text-sm mt-0.5">
+                      ${crmStats.totalPipelineValue.toLocaleString()}
+                    </p>
+                    <span className="text-[10px] text-muted-foreground">{crmStats.openDealsCount} deals</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-secondary/30 border border-border/40">
+                    <span className="text-[10px] text-muted-foreground uppercase font-semibold">Won Revenue</span>
+                    <p className="font-mono font-bold text-success text-sm mt-0.5">
+                      ${crmStats.totalWonValue.toLocaleString()}
+                    </p>
+                    <span className="text-[10px] text-muted-foreground">Closed contracts</span>
+                  </div>
+                </div>
+
+                {upcomingMeetings.length > 0 && (
+                  <div className="pt-2 border-t border-border/40 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground font-medium flex items-center gap-1">
+                        <Video className="h-3 w-3 text-primary" />
+                        <span>Upcoming Meetings</span>
+                      </span>
+                      <Button asChild variant="ghost" size="sm" className="h-6 px-1.5 text-xs">
+                        <Link href="/meetings">All</Link>
+                      </Button>
+                    </div>
+                    {upcomingMeetings.map((m) => (
+                      <div key={m.id} className="text-xs p-2 rounded-md bg-secondary/20 flex items-center justify-between">
+                        <span className="font-medium text-foreground truncate max-w-[170px]">{m.title}</span>
+                        <span className="text-[10px] font-mono text-muted-foreground">
+                          {new Date(m.scheduled_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Connected OS Product Loop Principle */}
           <Card className="border-border/80 bg-secondary/20 border-dashed">
             <CardHeader className="pb-2">
@@ -410,9 +476,9 @@ export default function HomePage() {
                 <span>Connected Core Loop</span>
               </div>
             </CardHeader>
-            <CardContent className="text-[11px] text-muted-foreground space-y-1">
+            <CardContent className="text-xs text-muted-foreground space-y-1">
               <p className="font-mono">
-                Goal → Plan → Project → Tasks → Calendar → Execution
+                Goal → Plan → Project → Tasks → Knowledge → CRM → Calendar
               </p>
               <p className="pt-1">
                 Every action taken directly updates measurable progress across all associated modules.

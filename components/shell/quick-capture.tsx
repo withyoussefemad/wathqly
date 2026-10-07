@@ -13,6 +13,7 @@ import { CheckSquare, FileText, Lightbulb, Bookmark, Users, Zap, Check } from "l
 import { toast } from "sonner";
 import { createNoteAction, createBookmarkAction } from "@/actions/knowledge";
 import { createTaskAction } from "@/actions/core-os";
+import { createDealAction } from "@/actions/crm";
 
 type CaptureType = "task" | "note" | "idea" | "bookmark" | "crm";
 
@@ -55,6 +56,13 @@ export function QuickCaptureDialog({
       fd.append("priority", "medium");
       fd.append("isMyDay", "true");
       await createTaskAction(fd);
+    } else if (type === "crm") {
+      await createDealAction({
+        title: content.trim(),
+        stage: "lead",
+        value: 10000,
+        priority: "medium",
+      });
     }
 
     setIsSaved(true);

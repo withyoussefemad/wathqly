@@ -264,7 +264,7 @@ export default function CalendarPage() {
                       </div>
                     ))}
                     {dayEvents.length > 3 && (
-                      <span className="text-[9px] text-muted-foreground block text-right">
+                      <span className="text-[10px] text-muted-foreground block text-right">
                         +{dayEvents.length - 3} more
                       </span>
                     )}
@@ -315,7 +315,7 @@ export default function CalendarPage() {
                         {event.description && (
                           <p className="text-xs text-muted-foreground mt-0.5">{event.description}</p>
                         )}
-                        <span className="text-[11px] text-muted-foreground flex items-center gap-1 mt-1 font-mono">
+                        <span className="text-xs text-muted-foreground flex items-center gap-1 mt-1 font-mono">
                           <Clock className="h-3 w-3" />
                           {dateObj.toLocaleDateString()} at {timeStr}
                         </span>

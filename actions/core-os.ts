@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveWorkspace } from "@/actions/workspace";
+import { runAutomationTriggerAction } from "@/actions/automation";
 import {
   createGoalSchema,
   createProjectSchema,
@@ -364,7 +365,7 @@ export async function createGoalAction(formData: FormData) {
       current_value: parsed.data.currentValue,
       unit: parsed.data.unit,
       deadline: parsed.data.deadline,
-    } as any).select().single();
+    }).select().single();
 
     if (error) return { success: false, message: error.message };
     revalidatePath("/goals");
@@ -446,6 +447,8 @@ export async function createProjectAction(formData: FormData) {
 
   const supabase = await getSupabaseSafe();
   if (supabase) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: "Authentication required" };
     const { data, error } = await supabase.from("projects").insert({
       workspace_id: workspaceId,
       name: parsed.data.name,
@@ -455,7 +458,8 @@ export async function createProjectAction(formData: FormData) {
       priority: parsed.data.priority,
       color: parsed.data.color,
       target_date: parsed.data.targetDate,
-    } as any).select().single();
+      created_by: user.id,
+    }).select().single();
 
     if (error) return { success: false, message: error.message };
     revalidatePath("/projects");
@@ -508,7 +512,10 @@ export async function getTasksAction(workspaceId?: string, options?: { myDayOnly
       query = query.eq("is_my_day", true);
     }
     if (options?.status) {
-      query = query.eq("status", options.status);
+      const statusFilter = options.status as TaskStatus;
+      if (statusFilter) {
+        query = query.eq("status", statusFilter);
+      }
     }
 
     const { data, error } = await query;
@@ -560,9 +567,14 @@ export async function createTaskAction(formData: FormData) {
       due_date: parsed.data.dueDate,
       is_my_day: parsed.data.isMyDay,
       estimated_minutes: parsed.data.estimatedMinutes,
-    } as any).select().single();
+    }).select().single();
 
     if (error) return { success: false, message: error.message };
+    try {
+      await runAutomationTriggerAction("task_created", data as unknown as Record<string, unknown>);
+    } catch {
+      // Automation failures must not roll back task creation.
+    }
     revalidatePath("/tasks");
     revalidatePath("/home");
     revalidatePath("/plan");
@@ -603,13 +615,22 @@ export async function createTaskAction(formData: FormData) {
 export async function toggleTaskStatusAction(taskId: string, currentStatus: TaskStatus) {
   const nextStatus: TaskStatus = currentStatus === "done" ? "todo" : "done";
   const completedAt = nextStatus === "done" ? new Date().toISOString() : null;
+  const workspace = await getActiveWorkspace();
 
   const supabase = await getSupabaseSafe();
   if (supabase) {
-    await (supabase as any).from("tasks").update({
+    const { data, error } = await supabase.from("tasks").update({
       status: nextStatus,
       completed_at: completedAt,
-    }).eq("id", taskId);
+    }).eq("id", taskId).eq("workspace_id", workspace?.id || "").select().maybeSingle();
+    if (error) return { success: false, message: error.message, nextStatus };
+    if (data && nextStatus === "done") {
+      try {
+        await runAutomationTriggerAction("task_completed", data as unknown as Record<string, unknown>);
+      } catch {
+        // Automation failures must not roll back task completion.
+      }
+    }
   } else {
     const task = SEED_TASKS.find((t) => t.id === taskId);
     if (task) {
@@ -628,7 +649,7 @@ export async function toggleTaskMyDayAction(taskId: string, currentIsMyDay: bool
   const nextVal = !currentIsMyDay;
   const supabase = await getSupabaseSafe();
   if (supabase) {
-    await (supabase as any).from("tasks").update({ is_my_day: nextVal }).eq("id", taskId);
+    await supabase.from("tasks").update({ is_my_day: nextVal }).eq("id", taskId);
   } else {
     const task = SEED_TASKS.find((t) => t.id === taskId);
     if (task) task.is_my_day = nextVal;
@@ -790,7 +811,7 @@ export async function createCalendarEventAction(formData: FormData) {
       all_day: parsed.data.allDay,
       event_type: parsed.data.eventType,
       color: parsed.data.color,
-    } as any).select().single();
+    }).select().single();
 
     if (error) return { success: false, message: error.message };
     revalidatePath("/calendar");

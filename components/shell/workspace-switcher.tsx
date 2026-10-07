@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/providers/workspace-provider";
 import { getInitials } from "@/lib/utils";
 
-export function WorkspaceSwitcher() {
+export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }) {
   const { currentWorkspace, workspaces, setCurrentWorkspace, setIsCreateOpen } = useWorkspace();
 
   return (
@@ -23,17 +23,15 @@ export function WorkspaceSwitcher() {
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-between px-2 h-9 border border-border/50 bg-secondary/50 hover:bg-secondary text-left font-normal"
+          className={`w-full h-9 border border-border/50 bg-secondary/50 hover:bg-secondary font-normal ${collapsed ? "justify-center px-0" : "justify-between px-2 text-left"}`}
         >
           <div className="flex items-center gap-2 truncate">
             <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-primary/20 text-primary text-[10px] font-semibold">
               {currentWorkspace ? getInitials(currentWorkspace.name) : "W"}
             </div>
-            <span className="truncate text-xs font-medium text-foreground">
-              {currentWorkspace?.name ?? "Select Workspace"}
-            </span>
+            {!collapsed && <span className="truncate text-xs font-medium text-foreground">{currentWorkspace?.name ?? "Select Workspace"}</span>}
           </div>
-          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground ml-1" />
+          {!collapsed && <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground ml-1" />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56 p-1">

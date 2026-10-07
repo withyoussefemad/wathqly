@@ -28,6 +28,7 @@ import type {
   KnowledgeBacklink,
   FileItem,
   Bookmark,
+  FileCategory,
 } from "@/lib/supabase/types";
 
 // ==============================================================================
@@ -363,7 +364,7 @@ const SEED_BOOKMARKS: Bookmark[] = [
 
 // Persistent runtime cache
 let memoryFolders: Folder[] = [...SEED_FOLDERS];
-let memoryTags: Tag[] = [...SEED_TAGS];
+const memoryTags: Tag[] = [...SEED_TAGS];
 let memoryNotes: Note[] = [...SEED_NOTES];
 let memoryBacklinks: KnowledgeBacklink[] = [...SEED_BACKLINKS];
 let memoryFiles: FileItem[] = [...SEED_FILES];
@@ -398,7 +399,7 @@ export async function getFoldersAction(workspaceId?: string): Promise<Folder[]> 
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("folders")
         .select("*")
         .eq("workspace_id", wsId)
@@ -445,7 +446,7 @@ export async function createFolderAction(input: CreateFolderInput, workspaceId?:
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("folders")
         .insert({
           workspace_id: wsId,
@@ -485,7 +486,7 @@ export async function updateFolderAction(id: string, input: UpdateFolderInput) {
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("folders")
         .update({
           ...parsed.data,
@@ -524,7 +525,7 @@ export async function deleteFolderAction(id: string) {
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      await (supabase as any).from("folders").delete().eq("id", id);
+      await supabase.from("folders").delete().eq("id", id);
     } catch {
       // fallback
     }
@@ -544,7 +545,7 @@ export async function getTagsAction(workspaceId?: string): Promise<Tag[]> {
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("tags")
         .select("*")
         .eq("workspace_id", wsId)
@@ -581,7 +582,7 @@ export async function createTagAction(input: CreateTagInput, workspaceId?: strin
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("tags")
         .insert({
           workspace_id: wsId,
@@ -631,7 +632,7 @@ export async function parseAndSyncNoteBacklinks(
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      await (supabase as any).from("knowledge_backlinks").delete().eq("source_note_id", sourceNoteId);
+      await supabase.from("knowledge_backlinks").delete().eq("source_note_id", sourceNoteId);
     } catch {
       // fallback
     }
@@ -665,7 +666,7 @@ export async function parseAndSyncNoteBacklinks(
 
       if (supabase) {
         try {
-          await (supabase as any).from("knowledge_backlinks").insert({
+          await supabase.from("knowledge_backlinks").insert({
             workspace_id: workspaceId,
             source_note_id: sourceNoteId,
             target_note_id: targetNote.id,
@@ -688,7 +689,7 @@ export async function getBacklinksAction(noteId: string): Promise<KnowledgeBackl
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("knowledge_backlinks")
         .select("*, source_note:source_note_id(*)")
         .eq("target_note_id", noteId);
@@ -726,7 +727,7 @@ export async function getNotesAction(params?: {
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      let query = (supabase as any)
+      let query = supabase
         .from("notes")
         .select("*, folder:folder_id(*), project:project_id(*), goal:goal_id(*)")
         .eq("workspace_id", wsId)
@@ -780,7 +781,7 @@ export async function getNoteByIdAction(id: string): Promise<Note | null> {
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("notes")
         .select("*, folder:folder_id(*), project:project_id(*), goal:goal_id(*)")
         .eq("id", id)
@@ -788,8 +789,9 @@ export async function getNoteByIdAction(id: string): Promise<Note | null> {
 
       if (!error && data) {
         const backlinks = await getBacklinksAction(id);
+        const note = data as unknown as Note;
         return {
-          ...data,
+          ...note,
           backlinks_count: backlinks.length,
         };
       }
@@ -854,7 +856,7 @@ export async function createNoteAction(input: CreateNoteInput, workspaceId?: str
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("notes")
         .insert({
           workspace_id: wsId,
@@ -902,7 +904,7 @@ export async function updateNoteAction(id: string, input: UpdateNoteInput) {
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("notes")
         .update({
           ...parsed.data,
@@ -983,9 +985,9 @@ export async function deleteNoteAction(id: string) {
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      await (supabase as any).from("notes").delete().eq("id", id);
-      await (supabase as any).from("knowledge_backlinks").delete().eq("source_note_id", id);
-      await (supabase as any).from("knowledge_backlinks").delete().eq("target_note_id", id);
+      await supabase.from("notes").delete().eq("id", id);
+      await supabase.from("knowledge_backlinks").delete().eq("source_note_id", id);
+      await supabase.from("knowledge_backlinks").delete().eq("target_note_id", id);
     } catch {
       // fallback
     }
@@ -1015,14 +1017,14 @@ export async function getFilesAction(params?: {
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      let query = (supabase as any)
+      let query = supabase
         .from("files")
         .select("*, folder:folder_id(*), project:project_id(*)")
         .eq("workspace_id", wsId)
         .order("created_at", { ascending: false });
 
       if (params?.folderId) query = query.eq("folder_id", params.folderId);
-      if (params?.category) query = query.eq("category", params.category);
+      if (params?.category) query = query.eq("category", params.category as FileCategory);
 
       const { data, error } = await query;
       if (!error && data && data.length > 0) {
@@ -1083,7 +1085,7 @@ export async function createFileAction(input: CreateFileInput, workspaceId?: str
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("files")
         .insert({
           workspace_id: wsId,
@@ -1120,7 +1122,7 @@ export async function deleteFileAction(id: string) {
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      await (supabase as any).from("files").delete().eq("id", id);
+      await supabase.from("files").delete().eq("id", id);
     } catch {
       // fallback
     }
@@ -1148,7 +1150,7 @@ export async function getBookmarksAction(params?: {
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      let query = (supabase as any)
+      let query = supabase
         .from("bookmarks")
         .select("*, folder:folder_id(*), project:project_id(*)")
         .eq("workspace_id", wsId)
@@ -1234,7 +1236,7 @@ export async function createBookmarkAction(input: CreateBookmarkInput, workspace
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("bookmarks")
         .insert({
           workspace_id: wsId,
@@ -1278,7 +1280,7 @@ export async function updateBookmarkAction(id: string, input: UpdateBookmarkInpu
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("bookmarks")
         .update({
           ...parsed.data,
@@ -1323,7 +1325,7 @@ export async function deleteBookmarkAction(id: string) {
   const supabase = await getSupabaseSafe();
   if (supabase) {
     try {
-      await (supabase as any).from("bookmarks").delete().eq("id", id);
+      await supabase.from("bookmarks").delete().eq("id", id);
     } catch {
       // fallback
     }

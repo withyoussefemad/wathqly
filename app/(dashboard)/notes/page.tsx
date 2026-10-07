@@ -344,14 +344,14 @@ export default function NotesPage() {
       {/* Tags Chips Bar */}
       {tags.length > 0 && (
         <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-          <span className="text-muted-foreground flex items-center gap-1 shrink-0 text-[11px]">
+          <span className="text-muted-foreground flex items-center gap-1 shrink-0 text-xs">
             <TagIcon className="h-3 w-3" /> Tags:
           </span>
           <Button
             variant={selectedTag === null ? "secondary" : "ghost"}
             size="sm"
             onClick={() => setSelectedTag(null)}
-            className="h-6 px-2 text-[11px] rounded-full"
+            className="h-6 px-2 text-xs rounded-full"
           >
             All
           </Button>
@@ -361,7 +361,7 @@ export default function NotesPage() {
               variant={selectedTag === tag.name ? "default" : "outline"}
               size="sm"
               onClick={() => setSelectedTag(selectedTag === tag.name ? null : tag.name)}
-              className="h-6 px-2.5 text-[11px] rounded-full gap-1"
+              className="h-6 px-2.5 text-xs rounded-full gap-1"
             >
               <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: tag.color }} />
               <span>#{tag.name}</span>
@@ -375,7 +375,7 @@ export default function NotesPage() {
         {/* Pinned Notes Section */}
         {pinnedNotes.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <h2 className="text-xs font-semibold font-medium text-muted-foreground flex items-center gap-1.5">
               <Pin className="h-3.5 w-3.5 text-primary rotate-45" />
               <span>Pinned Notes ({pinnedNotes.length})</span>
             </h2>
@@ -395,7 +395,7 @@ export default function NotesPage() {
 
         {/* All Notes Section */}
         <div className="space-y-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <h2 className="text-xs font-semibold font-medium text-muted-foreground flex items-center gap-1.5">
             <FileText className="h-3.5 w-3.5 text-primary" />
             <span>
               {pinnedNotes.length > 0 ? `Other Notes (${unpinnedNotes.length})` : `All Notes (${filteredNotes.length})`}
@@ -404,7 +404,7 @@ export default function NotesPage() {
 
           {filteredNotes.length === 0 ? (
             <div className="border border-dashed border-border/80 rounded-xl p-12 text-center space-y-3">
-              <FileText className="h-10 w-10 text-muted-foreground/40 mx-auto" />
+              <FileText className="h-10 w-10 text-muted-foreground/70 mx-auto" />
               <div className="text-sm font-medium text-foreground">No notes found</div>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                 {searchQuery || selectedFolderId || selectedTag
@@ -566,7 +566,7 @@ export default function NotesPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Link2 className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                  <span className="text-xs font-semibold font-medium text-foreground">
                     Linked References / Backlinks ({activeBacklinks.length})
                   </span>
                 </div>
@@ -605,7 +605,7 @@ export default function NotesPage() {
                           <span className="text-[10px] text-muted-foreground">Click to jump</span>
                         </div>
                         {bl.context_snippet && (
-                          <p className="text-[11px] text-muted-foreground italic pl-5 line-clamp-2">
+                          <p className="text-xs text-muted-foreground italic pl-5 line-clamp-2">
                             &quot;{bl.context_snippet}&quot;
                           </p>
                         )}

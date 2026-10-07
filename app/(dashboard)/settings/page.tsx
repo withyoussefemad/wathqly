@@ -1,11 +1,11 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Settings, User, Building2, Shield, Palette, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { useWorkspace } from "@/components/providers/workspace-provider";
 
@@ -77,28 +77,17 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Workspace Members & Roles Card */}
+        {/* Workspace Members & Roles */}
         <Card className="border-border/80">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-primary" />
               <CardTitle className="text-base font-semibold">Workspace Members</CardTitle>
             </div>
-            <CardDescription className="text-xs">Role hierarchy: Owner → Admin → Member → Viewer</CardDescription>
+            <CardDescription className="text-xs">Review workspace members, roles, and project access.</CardDescription>
           </CardHeader>
-          <CardContent className="p-0 divide-y divide-border/60">
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">
-                  YE
-                </div>
-                <div>
-                  <p className="text-xs font-semibold">{profile?.full_name || "Youssef Emad"}</p>
-                  <p className="text-[11px] text-muted-foreground">{profile?.email || "youssef@wathqly.app"}</p>
-                </div>
-              </div>
-              <Badge variant="accent">Owner</Badge>
-            </div>
+          <CardContent>
+            <Button asChild variant="outline" size="sm"><Link href="/team">Manage team</Link></Button>
           </CardContent>
         </Card>
 
@@ -121,13 +110,13 @@ export default function SettingsPage() {
         <Card className="border-border/80">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-emerald-500" />
+              <Shield className="h-4 w-4 text-success" />
               <CardTitle className="text-base font-semibold">Security &amp; Row Level Security</CardTitle>
             </div>
             <CardDescription className="text-xs">PostgreSQL RLS ensures tenant isolation</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2 text-xs text-muted-foreground">
-            <div className="p-3 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+            <div className="p-3 rounded-md bg-success/10 text-success dark:text-success border border-success/20">
               ✓ Database Row Level Security (RLS) is active on all workspace tables.
             </div>
             <p>

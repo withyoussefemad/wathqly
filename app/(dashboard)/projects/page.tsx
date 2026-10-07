@@ -146,7 +146,7 @@ export default function ProjectsPage() {
         </div>
       ) : filteredProjects.length === 0 ? (
         <Card className="border-dashed p-10 text-center space-y-3">
-          <FolderGit2 className="h-8 w-8 text-muted-foreground/50 mx-auto" />
+          <FolderGit2 className="h-8 w-8 text-muted-foreground/70 mx-auto" />
           <h3 className="font-semibold text-sm">No projects found</h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
             Create structured projects to organize your tasks, roadmaps, and goal deliverables.
@@ -220,7 +220,7 @@ export default function ProjectsPage() {
                   </div>
 
                   {/* Connected Metadata */}
-                  <div className="pt-2 border-t border-border/50 flex items-center justify-between text-[11px] text-muted-foreground">
+                  <div className="pt-2 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
                     <div className="flex items-center gap-1.5 truncate">
                       <Target className="h-3 w-3 text-primary shrink-0" />
                       <span className="truncate">

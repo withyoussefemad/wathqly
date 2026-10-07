@@ -1920,22 +1920,22 @@ A feature is not considered complete until it has:
 
 ## Phase 6 — Automation
 
-- triggers
-- conditions
-- actions
-- scheduled workflows
-- notifications
-- automation history
+- Workspace-scoped workflows with task-created, task-completed, deal-stage-changed, and scheduled triggers
+- AND-combined conditions on event title, status, priority, or deal stage
+- In-app notification and task-creation actions
+- One-time, daily, weekly, and monthly schedules processed through `GET /api/automations/run-due`, protected by `CRON_SECRET` and `SUPABASE_SERVICE_ROLE_KEY`
+- Workspace notifications, enable/pause controls, manual runs, and execution history
+- External side effects require explicit approval and are not part of this phase
 
 ## Phase 7 — Team OS
 
-- members
-- roles
-- permissions
-- teams
-- shared projects
-- collaboration
-- approvals
+- Workspace member administration with owner, admin, member, and viewer roles
+- Admin/owner-gated role changes and registered-account member addition; email invitations require a configured mail provider
+- Named teams with workspace member assignments
+- Explicit project collaborators with project-scoped RLS for projects, tasks, and linked records
+- Workspace-visible project discussion with member write access
+- Approval requests with owner/admin decisions, decision notes, notifications, and audit history
+- Workspace-level access is enforced in server actions and PostgreSQL RLS
 
 ---
 

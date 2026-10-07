@@ -20,6 +20,8 @@ import {
   Search,
   Sparkles,
   ArrowRight,
+  Video,
+  Share2,
 } from "lucide-react";
 
 interface NavItem {
@@ -38,7 +40,8 @@ const NAV_ITEMS: NavItem[] = [
   { title: "Notes & Tiptap Editor", href: "/notes", icon: FileText, section: "Knowledge" },
   { title: "Knowledge Base, Files & Bookmarks", href: "/knowledge", icon: FileText, section: "Knowledge" },
   { title: "CRM & Contacts", href: "/crm", icon: Users2, section: "Business" },
-  { title: "Content Management", href: "/content", icon: FileText, section: "Business" },
+  { title: "Meetings & Action Items", href: "/meetings", icon: Video, section: "Business" },
+  { title: "Content Calendar & Pipeline", href: "/content", icon: Share2, section: "Business" },
   { title: "Whiteboard & Mind Maps", href: "/whiteboards", icon: PenTool, section: "Creative" },
   { title: "AI Assistant & Memory", href: "/ai", icon: Bot, section: "AI" },
   { title: "Settings & Workspaces", href: "/settings", icon: Settings, section: "System" },

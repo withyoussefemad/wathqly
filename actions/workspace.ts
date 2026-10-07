@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createWorkspaceSchema } from "@/schemas/workspace";
-import type { Workspace, WorkspaceMember } from "@/lib/supabase/types";
+import type { Workspace } from "@/lib/supabase/types";
 
 const ACTIVE_WORKSPACE_COOKIE = "wathqly_active_workspace";
 
@@ -32,8 +32,8 @@ export async function getUserWorkspaces(): Promise<Workspace[]> {
   }
 
   return members
-    .map((m: any) => m.workspaces as Workspace)
-    .filter(Boolean);
+    .map((m) => (m as unknown as { workspaces: Workspace | null }).workspaces)
+    .filter((ws): ws is Workspace => Boolean(ws));
 }
 
 export async function getActiveWorkspace(): Promise<Workspace | null> {
@@ -52,16 +52,7 @@ export async function getActiveWorkspace(): Promise<Workspace | null> {
 
   // Fallback to first available workspace
   const defaultWs = workspaces[0];
-  if (defaultWs) {
-    cookieStore.set(ACTIVE_WORKSPACE_COOKIE, defaultWs.id, {
-      path: "/",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 365, // 1 year
-    });
-    return defaultWs;
-  }
-
-  return null;
+  return defaultWs ?? null;
 }
 
 export async function setActiveWorkspaceAction(workspaceId: string): Promise<boolean> {
@@ -119,7 +110,7 @@ export async function createWorkspaceAction(formData: FormData) {
       name: parsed.data.name,
       slug: parsed.data.slug || slug,
       created_by: user.id,
-    } as any)
+    })
     .select()
     .single();
 
@@ -137,7 +128,7 @@ export async function createWorkspaceAction(formData: FormData) {
     workspace_id: createdWs.id,
     user_id: user.id,
     role: "owner",
-  } as any);
+  });
 
   // Set active cookie
   const cookieStore = await cookies();

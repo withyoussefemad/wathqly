@@ -276,7 +276,7 @@ export default function PlanPage() {
                       className="mt-0.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                     >
                       {item.is_completed ? (
-                        <CheckCircle2 className="h-4 w-4 text-emerald-500 fill-emerald-500/20" />
+                        <CheckCircle2 className="h-4 w-4 text-success fill-emerald-500/20" />
                       ) : (
                         <Circle className="h-4 w-4" />
                       )}
@@ -290,7 +290,7 @@ export default function PlanPage() {
                         {item.title}
                       </p>
                       {item.time_block && (
-                        <span className="text-[11px] text-muted-foreground flex items-center gap-1 mt-1 font-mono">
+                        <span className="text-xs text-muted-foreground flex items-center gap-1 mt-1 font-mono">
                           <Clock className="h-3 w-3 text-primary" />
                           {item.time_block}
                         </span>
@@ -327,7 +327,7 @@ export default function PlanPage() {
               {goals[0] ? (
                 <div className="p-3 rounded-lg bg-secondary/50 space-y-2 text-xs">
                   <div className="font-semibold text-foreground">{goals[0].title}</div>
-                  <div className="flex justify-between text-muted-foreground text-[11px]">
+                  <div className="flex justify-between text-muted-foreground text-xs">
                     <span>Current progress</span>
                     <span className="font-semibold font-mono text-foreground">
                       {goals[0].current_value} / {goals[0].target_value} {goals[0].unit}
@@ -360,9 +360,9 @@ export default function PlanPage() {
               <p>
                 Per Section 7 of product principles, the system balances <strong>urgency</strong>, <strong>effort</strong>, and <strong>goal impact</strong> to prevent context switching.
               </p>
-              <div className="p-2.5 rounded-md bg-secondary/50 text-[11px] text-foreground flex items-center justify-between">
+              <div className="p-2.5 rounded-md bg-secondary/50 text-xs text-foreground flex items-center justify-between">
                 <span>Calendar availability:</span>
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400">4.5 hrs Focus</span>
+                <span className="font-semibold text-success">4.5 hrs Focus</span>
               </div>
             </CardContent>
           </Card>

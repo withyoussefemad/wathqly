@@ -189,7 +189,7 @@ export default function TasksPage() {
         <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "my-day" | "list" | "board")} className="w-auto">
           <TabsList>
             <TabsTrigger value="my-day" className="gap-1.5">
-              <Sun className="h-3.5 w-3.5 text-amber-500" />
+              <Sun className="h-3.5 w-3.5 text-warning" />
               <span>My Day</span>
               <span className="ml-1 text-[10px] bg-secondary px-1.5 rounded-full font-mono">
                 {tasks.filter((t) => t.is_my_day).length}
@@ -257,7 +257,7 @@ export default function TasksPage() {
                             className="mt-0.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                           >
                             {t.status === "done" ? (
-                              <CheckCircle2 className="h-4 w-4 text-emerald-500 fill-emerald-500/20" />
+                              <CheckCircle2 className="h-4 w-4 text-success fill-emerald-500/20" />
                             ) : (
                               <Circle className="h-4 w-4" />
                             )}
@@ -267,7 +267,7 @@ export default function TasksPage() {
                               {t.title}
                             </p>
                             {t.description && (
-                              <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                              <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
                                 {t.description}
                               </p>
                             )}
@@ -276,7 +276,7 @@ export default function TasksPage() {
                         <button
                           onClick={() => handleToggleMyDay(t)}
                           className={`p-1 rounded hover:bg-secondary cursor-pointer ${
-                            t.is_my_day ? "text-amber-500" : "text-muted-foreground/40 hover:text-muted-foreground"
+                            t.is_my_day ? "text-warning" : "text-muted-foreground/70 hover:text-muted-foreground"
                           }`}
                         >
                           <Sun className="h-3.5 w-3.5" />
@@ -286,7 +286,7 @@ export default function TasksPage() {
                       <div className="mt-2.5 pt-2 border-t border-border/40 flex items-center justify-between text-[10px] text-muted-foreground">
                         <Badge
                           variant={t.priority === "urgent" ? "destructive" : t.priority === "high" ? "default" : "secondary"}
-                          className="text-[9px] px-1.5 py-0"
+                          className="text-[10px] px-1.5 py-0"
                         >
                           {t.priority}
                         </Badge>
@@ -325,9 +325,9 @@ export default function TasksPage() {
           <CardContent className="p-0 divide-y divide-border/60">
             {displayedTasks.length === 0 ? (
               <div className="p-10 text-center space-y-2 text-muted-foreground">
-                <CheckSquare className="h-7 w-7 mx-auto text-muted-foreground/40" />
+                <CheckSquare className="h-7 w-7 mx-auto text-muted-foreground/70" />
                 <p className="text-xs font-medium">No tasks found</p>
-                <p className="text-[11px]">Use the quick input above to add your first task.</p>
+                <p className="text-xs">Use the quick input above to add your first task.</p>
               </div>
             ) : (
               displayedTasks.map((task) => (
@@ -341,7 +341,7 @@ export default function TasksPage() {
                       className="cursor-pointer text-muted-foreground hover:text-primary transition-colors"
                     >
                       {task.status === "done" ? (
-                        <CheckCircle2 className="h-4 w-4 text-emerald-500 fill-emerald-500/20" />
+                        <CheckCircle2 className="h-4 w-4 text-success fill-emerald-500/20" />
                       ) : (
                         <Circle className="h-4 w-4" />
                       )}
@@ -354,7 +354,7 @@ export default function TasksPage() {
                       >
                         {task.title}
                       </p>
-                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground">
+                      <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
                         {task.estimated_minutes && (
                           <span className="flex items-center gap-0.5 font-mono">
                             <Clock className="h-3 w-3" />
@@ -376,8 +376,8 @@ export default function TasksPage() {
                       title={task.is_my_day ? "Remove from My Day" : "Add to My Day"}
                       className={`p-1.5 rounded-md hover:bg-secondary cursor-pointer ${
                         task.is_my_day
-                          ? "text-amber-500 bg-amber-500/10"
-                          : "text-muted-foreground/30 hover:text-muted-foreground"
+                          ? "text-warning bg-warning/10"
+                          : "text-muted-foreground/60 hover:text-muted-foreground"
                       }`}
                     >
                       <Sun className="h-4 w-4" />
@@ -501,7 +501,7 @@ export default function TasksPage() {
                 className="accent-primary h-4 w-4"
               />
               <label htmlFor="modalIsMyDay" className="text-xs font-medium text-foreground cursor-pointer flex items-center gap-1.5">
-                <Sun className="h-3.5 w-3.5 text-amber-500" />
+                <Sun className="h-3.5 w-3.5 text-warning" />
                 Add directly to My Day list
               </label>
             </div>

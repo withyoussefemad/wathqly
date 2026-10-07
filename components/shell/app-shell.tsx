@@ -22,7 +22,11 @@ import {
   X,
   LogOut,
   ChevronDown,
+  PanelLeftClose,
+  PanelLeftOpen,
   User as UserIcon,
+  Workflow,
+  UsersRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -41,7 +45,12 @@ import { CommandPalette } from "./command-palette";
 import { QuickCaptureDialog } from "./quick-capture";
 import { useWorkspace } from "@/components/providers/workspace-provider";
 import { signOutAction } from "@/actions/auth";
+import {
+  getSidebarPreferencesAction,
+  updateSidebarPreferencesAction,
+} from "@/actions/workspace-preferences";
 import { getInitials } from "@/lib/utils";
+import { DEFAULT_SIDEBAR_PREFERENCES, type SidebarPreferences } from "@/lib/utils/sidebar-preferences";
 
 interface NavGroup {
   label: string;
@@ -67,6 +76,7 @@ const NAVIGATION: NavGroup[] = [
       { title: "Goals", href: "/goals", icon: Target },
       { title: "Projects", href: "/projects", icon: FolderGit2 },
       { title: "Tasks", href: "/tasks", icon: CheckSquare },
+      { title: "Automations", href: "/automations", icon: Workflow },
       { title: "Calendar", href: "/calendar", icon: Calendar },
     ],
   },
@@ -95,6 +105,7 @@ const NAVIGATION: NavGroup[] = [
   {
     label: "Preferences",
     items: [
+      { title: "Team", href: "/team", icon: UsersRound },
       { title: "Settings", href: "/settings", icon: Settings },
     ],
   },
@@ -103,9 +114,25 @@ const NAVIGATION: NavGroup[] = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { profile } = useWorkspace();
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = React.useState(false);
   const [quickCaptureOpen, setQuickCaptureOpen] = React.useState(false);
+  const [sidebarPreferences, setSidebarPreferences] = React.useState<SidebarPreferences>(DEFAULT_SIDEBAR_PREFERENCES);
+
+  React.useEffect(() => {
+    let active = true;
+    void getSidebarPreferencesAction().then((preferences) => {
+      if (active) setSidebarPreferences(preferences);
+    });
+    return () => { active = false; };
+  }, []);
+
+  const persistSidebarPreferences = React.useCallback(async (next: SidebarPreferences) => {
+    setSidebarPreferences(next);
+    const result = await updateSidebarPreferencesAction(next);
+    if (!result.success) {
+      setSidebarPreferences(sidebarPreferences);
+    }
+  }, [sidebarPreferences]);
 
   // Global keyboard shortcuts (Cmd+K, Cmd+Shift+Space)
   React.useEffect(() => {
@@ -137,61 +164,50 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex antialiased">
+    <div className="min-h-screen bg-background text-foreground flex min-w-0 antialiased">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-border bg-sidebar shrink-0 select-none">
+      <aside className={`hidden md:flex flex-col border-r border-border bg-sidebar shrink-0 select-none transition-[width] duration-300 ${sidebarPreferences.sidebarCollapsed ? "w-16" : "w-64"}`}>
         {/* Workspace Switcher Header */}
         <div className="p-3 border-b border-border/80 space-y-2">
-          <div className="flex items-center justify-between px-1">
-            <Link href="/home" className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm shadow-xs">
-                و
-              </div>
-              <span className="font-semibold text-sm tracking-tight">وثّقلي</span>
+          <div className={`flex items-center justify-between px-1 ${sidebarPreferences.sidebarCollapsed ? "justify-center" : ""}`}>
+            <Link href="/home" className={`flex items-center gap-2 ${sidebarPreferences.sidebarCollapsed ? "justify-center" : ""}`}>
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm shadow-xs">و</div>
+              {!sidebarPreferences.sidebarCollapsed && <span className="font-semibold text-sm">وثّقلي</span>}
             </Link>
-            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">
-              v0.1
-            </span>
+            {!sidebarPreferences.sidebarCollapsed && <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">v0.1</span>}
           </div>
-          <WorkspaceSwitcher />
+          <WorkspaceSwitcher collapsed={sidebarPreferences.sidebarCollapsed} />
         </div>
 
         {/* Quick action triggers */}
-        <div className="px-3 py-2 space-y-1">
+        <div className={`px-3 py-2 space-y-1 ${sidebarPreferences.sidebarCollapsed ? "flex flex-col items-center" : ""}`}>
           <button
             onClick={() => setCommandPaletteOpen(true)}
             className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs bg-secondary/60 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors border border-border/40 cursor-pointer"
           >
             <span className="flex items-center gap-2">
               <Search className="h-3.5 w-3.5" />
-              <span>Search...</span>
+              {!sidebarPreferences.sidebarCollapsed && <span>Search...</span>}
             </span>
-            <kbd className="h-4 px-1 rounded bg-background border border-border text-[9px] font-mono">
-              ⌘K
-            </kbd>
+            {!sidebarPreferences.sidebarCollapsed && <kbd className="h-4 px-1 rounded bg-background border border-border text-[9px] font-mono">⌘K</kbd>}
           </button>
-
           <button
             onClick={() => setQuickCaptureOpen(true)}
-            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs bg-primary/5 hover:bg-primary/10 text-primary transition-colors border border-primary/20 cursor-pointer font-medium"
+            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground transition-colors border border-border cursor-pointer font-medium"
           >
             <span className="flex items-center gap-2">
               <Zap className="h-3.5 w-3.5" />
-              <span>Quick Capture</span>
+              {!sidebarPreferences.sidebarCollapsed && <span>Quick Capture</span>}
             </span>
-            <kbd className="h-4 px-1 rounded bg-background border border-border text-[9px] font-mono text-muted-foreground">
-              ⌘⇧␣
-            </kbd>
+            {!sidebarPreferences.sidebarCollapsed && <kbd className="h-4 px-1 rounded bg-background border border-border text-[9px] font-mono text-muted-foreground">⌘⇧␣</kbd>}
           </button>
         </div>
 
         {/* Scrollable Navigation Groups */}
-        <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
+        <div className="flex-1 overflow-y-auto px-2 py-2 space-y-4">
           {NAVIGATION.map((group) => (
             <div key={group.label} className="space-y-1">
-              <div className="px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                {group.label}
-              </div>
+              {!sidebarPreferences.sidebarCollapsed && <div className="px-2 text-xs font-medium text-muted-foreground">{group.label}</div>}
               <div className="space-y-0.5">
                 {group.items.map((item) => {
                   const Icon = item.icon;
@@ -200,27 +216,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                        isActive
-                          ? "bg-primary text-primary-foreground shadow-xs font-semibold"
-                          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                      }`}
+                      title={item.title}
+                      className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${sidebarPreferences.sidebarCollapsed ? "justify-center px-0" : ""} ${isActive ? "bg-primary/10 text-primary font-semibold" : "text-muted-foreground hover:bg-secondary hover:text-foreground"}`}
                     >
-                      <div className="flex items-center gap-2.5">
-                        <Icon className={`h-4 w-4 ${isActive ? "text-primary-foreground" : ""}`} />
-                        <span>{item.title}</span>
+                      <div className={`flex items-center gap-2.5 ${sidebarPreferences.sidebarCollapsed ? "justify-center" : ""}`}>
+                        <Icon className="h-4 w-4" />
+                        {!sidebarPreferences.sidebarCollapsed && <span>{item.title}</span>}
                       </div>
-                      {item.badge && (
-                        <span
-                          className={`text-[9px] px-1.5 py-0.2 rounded-full font-medium ${
-                            isActive
-                              ? "bg-white/20 text-white"
-                              : "bg-primary/10 text-primary"
-                          }`}
-                        >
-                          {item.badge}
-                        </span>
-                      )}
+                      {!sidebarPreferences.sidebarCollapsed && item.badge && <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${isActive ? "bg-primary/20 text-primary" : "bg-primary/10 text-primary"}`}>{item.badge}</span>}
                     </Link>
                   );
                 })}
@@ -230,26 +233,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* User Footer */}
-        <div className="p-3 border-t border-border/80 flex items-center justify-between">
+        <div className={`p-3 border-t border-border/80 flex items-center justify-between ${sidebarPreferences.sidebarCollapsed ? "justify-center" : ""}`}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-9 px-2 w-full justify-between hover:bg-secondary">
                 <div className="flex items-center gap-2 truncate">
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
-                      {getInitials(profile?.full_name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="truncate text-left">
-                    <p className="text-xs font-medium leading-none text-foreground truncate">
-                      {profile?.full_name || "User"}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground leading-none mt-1 truncate">
-                      {profile?.email || "Personal"}
-                    </p>
-                  </div>
+                  <Avatar className="h-6 w-6"><AvatarFallback className="text-[10px] bg-primary/10 text-primary">{getInitials(profile?.full_name)}</AvatarFallback></Avatar>
+                  {!sidebarPreferences.sidebarCollapsed && <div className="truncate text-left"><p className="text-xs font-medium leading-none text-foreground truncate">{profile?.full_name || "User"}</p><p className="text-[10px] text-muted-foreground leading-none mt-1 truncate">{profile?.email || "Personal"}</p></div>}
                 </div>
-                <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
+                {!sidebarPreferences.sidebarCollapsed && <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
@@ -294,15 +286,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               variant="ghost"
               size="icon-sm"
               className="md:hidden"
-              onClick={() => setMobileMenuOpen(true)}
+              onClick={() => void persistSidebarPreferences({ ...sidebarPreferences, mobileSidebarOpen: true })}
+              title="Open sidebar"
             >
               <Menu className="h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="hidden md:inline-flex"
+              onClick={() => void persistSidebarPreferences({ ...sidebarPreferences, sidebarCollapsed: !sidebarPreferences.sidebarCollapsed })}
+              title={sidebarPreferences.sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
+            >
+              {sidebarPreferences.sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
             </Button>
 
             {/* Breadcrumb info */}
             <div className="flex items-center gap-2 text-xs">
               <span className="text-muted-foreground">وثّقلي</span>
-              <span className="text-muted-foreground/40">/</span>
+              <span className="text-muted-foreground/80">/</span>
               <span className="font-semibold text-foreground">{currentTitle}</span>
             </div>
           </div>
@@ -340,11 +343,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile Drawer Menu */}
-      {mobileMenuOpen && (
+      {sidebarPreferences.mobileSidebarOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
           <div
             className="fixed inset-0 bg-black/60 backdrop-blur-xs"
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={() => void persistSidebarPreferences({ ...sidebarPreferences, mobileSidebarOpen: false })}
           />
           <div className="relative w-72 max-w-[80vw] bg-sidebar flex flex-col h-full z-10 border-r border-border p-4 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-border">
@@ -357,7 +360,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={() => void persistSidebarPreferences({ ...sidebarPreferences, mobileSidebarOpen: false })}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -368,7 +371,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="flex-1 overflow-y-auto space-y-3 pt-2">
               {NAVIGATION.map((group) => (
                 <div key={group.label} className="space-y-1">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-2">
+                  <div className="text-xs font-medium text-muted-foreground px-2">
                     {group.label}
                   </div>
                   {group.items.map((item) => {
@@ -378,10 +381,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       <Link
                         key={item.href}
                         href={item.href}
-                        onClick={() => setMobileMenuOpen(false)}
+                        onClick={() => void persistSidebarPreferences({ ...sidebarPreferences, mobileSidebarOpen: false })}
                         className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium ${
                           isActive
-                            ? "bg-primary text-primary-foreground"
+                            ? "bg-primary/10 text-primary"
                             : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                         }`}
                       >
